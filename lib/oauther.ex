@@ -39,7 +39,7 @@ defmodule OAuther do
     params = protocol_params(params, creds, extra)
     signature = signature(verb, url, params, creds)
 
-    [{"oauth_signature", signature} | params]
+    [{"oauth_signature", signature} ] ++ params ++ extra
   end
   
   @spec header(params) :: {header, params}
@@ -62,7 +62,7 @@ defmodule OAuther do
       {"oauth_signature_method", signature_method(creds.method)},
       {"oauth_timestamp", timestamp()},
       {"oauth_version", "1.0"}
-    ] ++ extra ++ maybe_put_token(params, creds.token)
+    ] ++ maybe_put_token(params, creds.token)
   end
   
   @spec signature(String.t(), URI.t() | String.t(), params, Credentials.t()) :: binary
