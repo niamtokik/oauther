@@ -35,6 +35,13 @@ defmodule OAuther do
     [{"oauth_signature", signature} | params]
   end
 
+  def sign(verb, url, params, %Credentials{} = creds, extra) do
+    params = protocol_params(params, creds, extra)
+    signature = signature(verb, url, params, creds)
+
+    [{"oauth_signature", signature} | params]
+  end
+  
   @spec header(params) :: {header, params}
   def header(params) do
     {oauth_params, req_params} = split_with(params, &protocol_param?/1)
@@ -44,16 +51,20 @@ defmodule OAuther do
 
   @spec protocol_params(params, Credentials.t()) :: params
   def protocol_params(params, %Credentials{} = creds) do
+    protocol_params(params, creds, [])
+  end
+
+  @spec protocol_params(params, Credentials.t(), [{string(), string()}]) :: params
+  def protocol_params(params, %Credentials{} = creds, extra) do
     [
       {"oauth_consumer_key", creds.consumer_key},
       {"oauth_nonce", nonce()},
       {"oauth_signature_method", signature_method(creds.method)},
       {"oauth_timestamp", timestamp()},
       {"oauth_version", "1.0"}
-      | maybe_put_token(params, creds.token)
-    ]
+    ] ++ extra ++ maybe_put_token(params, creds.token)
   end
-
+  
   @spec signature(String.t(), URI.t() | String.t(), params, Credentials.t()) :: binary
   def signature(_, _, _, %Credentials{method: :plaintext} = creds) do
     compose_key(creds)

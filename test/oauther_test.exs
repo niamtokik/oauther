@@ -82,6 +82,13 @@ defmodule OAutherTest do
     assert req_params == [{"build", "Luna Park"}]
   end
 
+  test "Extra oauth1 params" do
+    creds = OAuther.credentials(consumer_key: "dpf43f3p2l4k3l03", consumer_secret: "kd94hf93k423kf44", token: "nnch734d00sl2jdk", token_secret: "pfkkdhi9sl3r4s00")
+    callback = "https://localhost/callback" |> URI.encode(&URI.char_unreserved?/1)
+    params = OAuther.sign("post", "https://api.twitter.com/1.1/statuses/lookup.json", [{"id", 485086311205048320}], creds, [{"oauth_callback", callback}])
+    {header, req_params} = OAuther.header(params)
+  end
+  
   defp fixture_path(file_path) do
     Path.expand("fixtures", __DIR__)
     |> Path.join(file_path)
