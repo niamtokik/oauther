@@ -36,7 +36,7 @@ defmodule OAuther do
   end
 
   def sign(verb, url, params, %Credentials{} = creds, extra) do
-    params = protocol_params(params, creds, extra)
+    params = protocol_params(params, creds)
     signature = signature(verb, url, params, creds)
 
     [{"oauth_signature", signature} ] ++ params ++ extra
@@ -49,6 +49,13 @@ defmodule OAuther do
     {{"Authorization", "OAuth " <> compose_header(oauth_params)}, req_params}
   end
 
+  def header(params, extra) do
+    {oauth_params, req_params} = split_with(params, &protocol_param?/1)
+
+    {{"Authorization", "OAuth " <> compose_header(oauth_params)}, req_params}
+  end
+
+  
   @spec protocol_params(params, Credentials.t()) :: params
   def protocol_params(params, %Credentials{} = creds) do
     protocol_params(params, creds, [])
